@@ -1,0 +1,1842 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Japan — November · Roy &amp; Family</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --bg-card: #ffffff;
+    --bg-surface: #f3f1ed;
+    --ink: #1a1a1a;
+    --ink-soft: #555555;
+    --ink-muted: #999999;
+    --line: #e8e4de;
+    --line-strong: #d8d3ca;
+    --accent-roy: #c5522a;
+    --accent-family: #3a5f8a;
+    --accent-soft: #f5ede7;
+    --serif: "Playfair Display", Georgia, serif;
+    --sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --shadow: 0 1px 0 var(--line);
+    --header-height: 64px;
+    --timeline-height: 116px;
+  }
+
+  html.dark {
+    --bg: #141414;
+    --bg-card: #1e1e1e;
+    --bg-surface: #252525;
+    --ink: #f0ede8;
+    --ink-soft: #aaaaaa;
+    --ink-muted: #666666;
+    --line: #2e2e2e;
+    --line-strong: #3a3a3a;
+    --accent-roy: #e0724a;
+    --accent-family: #5b8ab5;
+    --accent-soft: #2a1f1a;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-height) + var(--timeline-height) + 12px); }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+
+  a { color: var(--accent-roy); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .family a { color: var(--accent-family); }
+
+  /* ================= HEADER ================= */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: saturate(180%) blur(10px);
+    -webkit-backdrop-filter: saturate(180%) blur(10px);
+    border-bottom: 1px solid var(--line);
+    height: var(--header-height);
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .site-title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+  .site-subtitle {
+    display: block;
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+  }
+  .header-actions { display: flex; align-items: center; gap: 0.5rem; }
+  .icon-btn, .pdf-btn {
+    appearance: none;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.85rem;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease, background-color 120ms ease;
+    border-radius: 0;
+  }
+  .icon-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-btn:hover, .pdf-btn:hover {
+    border-color: var(--accent-roy);
+    color: var(--accent-roy);
+  }
+  .icon-btn svg { width: 18px; height: 18px; }
+  html.dark .icon-btn .sun { display: block; }
+  html.dark .icon-btn .moon { display: none; }
+  html:not(.dark) .icon-btn .sun { display: none; }
+  html:not(.dark) .icon-btn .moon { display: block; }
+
+  /* ================= TIMELINE ================= */
+  .timeline-wrap {
+    position: sticky;
+    top: var(--header-height);
+    z-index: 900;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    height: var(--timeline-height);
+    display: flex;
+    flex-direction: column;
+    transition: height 280ms cubic-bezier(.4,0,.2,1);
+  }
+  .timeline-wrap[data-expanded="true"] {
+    height: calc(var(--timeline-height) + 84px);
+  }
+  .timeline-bar {
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0.55rem 2rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex: 0 0 auto;
+  }
+  .timeline-week {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+  .timeline-week .week-num {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1;
+    letter-spacing: -0.005em;
+  }
+  .timeline-week[data-seg="roy"] .week-num { color: var(--accent-roy); }
+  .timeline-week[data-seg="family"] .week-num { color: var(--accent-family); }
+  .timeline-week .week-name {
+    font-family: var(--sans);
+    font-size: 0.8125rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .timeline-week .week-divider {
+    width: 18px;
+    height: 1px;
+    background: var(--line-strong);
+  }
+  .timeline-expand {
+    appearance: none;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    padding: 0.35rem 0.7rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: color 140ms ease, border-color 140ms ease;
+    white-space: nowrap;
+  }
+  .timeline-expand:hover {
+    color: var(--ink);
+    border-color: var(--line-strong);
+  }
+  .timeline-expand .chev {
+    display: inline-block;
+    transition: transform 220ms ease;
+    font-size: 0.7rem;
+  }
+  .timeline-wrap[data-expanded="true"] .timeline-expand .chev {
+    transform: rotate(180deg);
+  }
+  .timeline {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    flex: 1 1 auto;
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    position: relative;
+  }
+  .timeline-track-wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: max-content;
+    width: 100%;
+    position: relative;
+  }
+  .timeline-plane {
+    position: absolute;
+    top: 4px;
+    left: 0;
+    pointer-events: none;
+    transform: translateX(0) translateX(-50%);
+    transition: transform 480ms cubic-bezier(.4,0,.2,1), top 280ms ease;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: var(--accent-roy);
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .timeline-plane[data-seg="family"] { color: var(--accent-family); }
+  .timeline-plane .plane-glyph {
+    transform: rotate(45deg);
+    display: inline-block;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+  }
+  .timeline-plane .plane-tail {
+    width: 1px;
+    height: 10px;
+    background: currentColor;
+    opacity: 0.4;
+  }
+  .timeline-row {
+    display: flex;
+    align-items: center;
+    min-width: max-content;
+  }
+  .timeline-row + .timeline-row {
+    margin-top: 12px;
+  }
+  .timeline::-webkit-scrollbar { display: none; }
+  .timeline-track {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-width: max-content;
+    padding: 0 4px;
+  }
+  .timeline-stop {
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font-family: var(--sans);
+    color: var(--ink-soft);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    gap: 0.35rem;
+    transition: color 180ms ease;
+    min-width: 96px;
+  }
+  .timeline-stop .label {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .timeline-stop .sub {
+    font-size: 0.8125rem;
+    color: var(--ink-soft);
+    margin-top: 3px;
+    letter-spacing: 0.005em;
+    white-space: nowrap;
+    line-height: 1.1;
+    font-weight: 500;
+  }
+  .timeline-stop .dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--ink-muted);
+    transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+  }
+  .timeline-stop[data-seg="roy"]:hover { color: var(--accent-roy); }
+  .timeline-stop[data-seg="family"]:hover { color: var(--accent-family); }
+  .timeline-stop[data-seg="roy"]:hover .dot { border-color: var(--accent-roy); }
+  .timeline-stop[data-seg="family"]:hover .dot { border-color: var(--accent-family); }
+  .timeline-stop[data-seg="roy"].active .dot {
+    background: var(--accent-roy);
+    border-color: var(--accent-roy);
+    transform: scale(1.25);
+  }
+  .timeline-stop[data-seg="family"].active .dot {
+    background: var(--accent-family);
+    border-color: var(--accent-family);
+    transform: scale(1.25);
+  }
+  .timeline-stop[data-seg="roy"].active { color: var(--accent-roy); }
+  .timeline-stop[data-seg="family"].active { color: var(--accent-family); }
+
+  .timeline-connector {
+    height: 2px;
+    width: 28px;
+    flex: 0 0 auto;
+    margin-top: 4px;
+    /* margin to roughly align with dot row (dot row is below label/sub) */
+    align-self: center;
+    transform: translateY(11px);
+    transition: background-color 180ms ease;
+  }
+  .timeline-connector.seg-roy { background: var(--accent-roy); opacity: 0.45; }
+  .timeline-connector.seg-family { background: var(--accent-family); opacity: 0.45; }
+  .timeline-connector.seg-transition {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--accent-roy) 0 6px,
+      transparent 6px 10px,
+      var(--accent-family) 10px 16px,
+      transparent 16px 20px
+    );
+    opacity: 0.55;
+  }
+  .timeline-connector.seg-edge { background: var(--ink-muted); opacity: 0.3; }
+
+  .timeline-flag {
+    font-family: var(--sans);
+    font-size: 0.625rem;
+    color: var(--ink-muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* ================= MAIN ================= */
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 5rem;
+  }
+
+  /* ============== GENERAL TIPS ACCORDION ============== */
+  .tips {
+    border: 1px solid var(--line);
+    background: var(--bg-card);
+    margin-bottom: 3rem;
+  }
+  .tips-root {
+    appearance: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 1.1rem 1.4rem;
+    cursor: pointer;
+    font-family: var(--serif);
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    letter-spacing: -0.005em;
+  }
+  .tips-root .leading { display: flex; align-items: baseline; gap: 0.65rem; }
+  .tips-root .glyph { font-size: 1rem; line-height: 1; }
+  .tips-root .chev {
+    display: inline-block;
+    transition: transform 220ms ease;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+  }
+  .tips[data-open="true"] .tips-root .chev { transform: rotate(180deg); }
+  .tips-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 320ms ease;
+    border-top: 1px solid transparent;
+  }
+  .tips[data-open="true"] .tips-body {
+    border-top-color: var(--line);
+  }
+  .tips-inner { padding: 0.4rem 1.4rem 1rem; }
+
+  .tip-section { border-top: 1px solid var(--line); }
+  .tip-section:first-child { border-top: none; }
+  .tip-head {
+    appearance: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 0.85rem 0;
+    cursor: pointer;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .tip-head .leading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .tip-head .glyph { font-size: 1.05rem; line-height: 1; }
+  .tip-head .chev { color: var(--ink-soft); font-size: 0.8rem; transition: transform 220ms ease; }
+  .tip-section[data-open="true"] .tip-head .chev { transform: rotate(180deg); }
+  .tip-section-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 320ms ease;
+  }
+  .tip-section-inner {
+    padding: 0.25rem 0 1rem 1.85rem;
+    color: var(--ink-soft);
+    font-size: 0.9375rem;
+    line-height: 1.65;
+  }
+  .tip-section-inner p { margin: 0.5rem 0; }
+  .tip-section-inner p strong { color: var(--ink); font-weight: 600; }
+  .tip-section-inner a { font-weight: 500; }
+  .tip-section-inner a, .tip-section-inner a:visited { color: var(--accent-roy); }
+
+  /* ============== GUIDE SECTIONS ============== */
+  .section-header {
+    margin: 4rem 0 2rem;
+    padding-top: 0.5rem;
+  }
+  .section-header.first { margin-top: 1rem; }
+  .section-eyebrow {
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--ink-muted);
+    margin: 0 0 0.6rem;
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 2.25rem;
+    line-height: 1.1;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .section-title .accent-roy { color: var(--accent-roy); }
+  .section-title .accent-family { color: var(--accent-family); }
+  .section-intro {
+    margin: 0.85rem 0 0;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: var(--serif);
+    font-size: 1.0625rem;
+    max-width: 36em;
+  }
+  .basing {
+    margin: 1.5rem 0 0;
+    padding: 0.85rem 1rem;
+    border-left: 2px solid var(--accent-family);
+    font-size: 0.9375rem;
+    color: var(--ink);
+  }
+  .basing strong { font-weight: 600; }
+
+  /* Day block */
+  .day {
+    margin: 3.5rem 0;
+    border-top: 1px solid var(--line);
+    padding-top: 2rem;
+    scroll-margin-top: calc(var(--header-height) + var(--timeline-height) + 16px);
+  }
+  .day-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .day-head-left { flex: 1 1 320px; min-width: 0; }
+  .day-eyebrow {
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin: 0 0 0.35rem;
+  }
+  .roy .day-eyebrow { color: var(--accent-roy); }
+  .family .day-eyebrow { color: var(--accent-family); }
+  .day-title {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.875rem;
+    line-height: 1.15;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+  .day-summary {
+    flex: 1 1 320px;
+    margin: 0;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: var(--serif);
+    font-size: 1rem;
+    line-height: 1.55;
+    max-width: 38em;
+  }
+
+  /* Map */
+  .day-card { isolation: isolate; }
+  .day-map {
+    width: 100%;
+    height: 300px;
+    position: relative;
+    z-index: 0;
+    border: 1px solid var(--line);
+    background: var(--bg-surface);
+    margin: 0.5rem 0 1.5rem;
+  }
+  .day-map.is-loading::before {
+    content: "Loading map…";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--ink-muted);
+    font-size: 0.85rem;
+  }
+  /* Leaflet visual tweaks */
+  .leaflet-container { background: var(--bg-surface); font-family: var(--sans); }
+  .leaflet-tile-pane { filter: none; }
+  html.dark .leaflet-tile-pane {
+    filter: invert(0.92) hue-rotate(180deg) brightness(0.95) contrast(0.88) saturate(0.85);
+  }
+  /* Counter-invert the markers so they keep their accent color in dark mode */
+  html.dark .leaflet-marker-pane,
+  html.dark .leaflet-popup-pane,
+  html.dark .leaflet-overlay-pane {
+    filter: none;
+  }
+  .leaflet-popup-content-wrapper {
+    border-radius: 0;
+    background: var(--bg-card);
+    color: var(--ink);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  }
+  html.dark .leaflet-popup-content-wrapper { box-shadow: 0 2px 12px rgba(0,0,0,0.5); }
+  .leaflet-popup-tip { background: var(--bg-card); }
+  .leaflet-popup-content {
+    margin: 9px 14px;
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .leaflet-popup-content .map-popup a {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .leaflet-popup-content .map-popup a:hover { text-decoration: underline; }
+  .leaflet-control-attribution {
+    background: color-mix(in srgb, var(--bg-card) 80%, transparent) !important;
+    color: var(--ink-muted) !important;
+    font-size: 10px !important;
+  }
+  .leaflet-control-attribution a { color: var(--ink-soft) !important; }
+  .leaflet-bar a {
+    background-color: var(--bg-card) !important;
+    color: var(--ink) !important;
+    border-bottom-color: var(--line) !important;
+  }
+  .leaflet-bar a:hover { background-color: var(--bg-surface) !important; }
+
+  /* Locations */
+  .locations {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.25rem 2rem;
+  }
+  .loc {
+    padding: 0.85rem 0;
+    border-top: 1px dashed var(--line);
+  }
+  .loc:first-child, .loc:nth-child(2) { border-top: none; }
+  @media (max-width: 700px) {
+    .locations { grid-template-columns: 1fr; }
+    .loc:nth-child(2) { border-top: 1px dashed var(--line); }
+  }
+  .loc-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+  .loc-num {
+    font-family: var(--sans);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+    letter-spacing: 0.08em;
+    min-width: 1.4em;
+  }
+  .roy .loc-num { color: var(--accent-roy); }
+  .family .loc-num { color: var(--accent-family); }
+  .loc-name {
+    font-family: var(--sans);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+  .loc-name a:hover { text-decoration: underline; }
+  .loc-name.plain { color: var(--ink); }
+  .loc ul {
+    margin: 0;
+    padding: 0 0 0 calc(1.4em + 0.5rem);
+    list-style: none;
+  }
+  .loc li {
+    position: relative;
+    padding-left: 0.85rem;
+    color: var(--ink-soft);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin: 0.2rem 0;
+  }
+  .loc li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.65em;
+    width: 4px;
+    height: 1px;
+    background: var(--ink-muted);
+  }
+  .loc li .warn {
+    color: var(--accent-roy);
+    font-weight: 600;
+  }
+  .family .loc li .warn { color: var(--accent-family); }
+
+  /* Optional Hiroshima callout */
+  .day.optional .day-eyebrow { color: var(--ink-muted); }
+
+  .loc {
+    transition: background-color 160ms ease, box-shadow 160ms ease;
+    border-radius: 4px;
+  }
+  .loc.is-marker-hover {
+    background: color-mix(in srgb, var(--accent-roy) 9%, transparent);
+    box-shadow: inset 3px 0 0 var(--accent-roy);
+  }
+  .day.family .loc.is-marker-hover {
+    background: color-mix(in srgb, var(--accent-family) 10%, transparent);
+    box-shadow: inset 3px 0 0 var(--accent-family);
+  }
+  .loc.is-marker-clicked {
+    animation: locPulse 2.2s ease-out;
+  }
+  @keyframes locPulse {
+    0%   { background: color-mix(in srgb, var(--accent-roy) 22%, transparent); box-shadow: inset 3px 0 0 var(--accent-roy); }
+    60%  { background: color-mix(in srgb, var(--accent-roy) 10%, transparent); box-shadow: inset 3px 0 0 var(--accent-roy); }
+    100% { background: transparent; box-shadow: inset 3px 0 0 transparent; }
+  }
+  .day.family .loc.is-marker-clicked {
+    animation: locPulseFam 2.2s ease-out;
+  }
+  @keyframes locPulseFam {
+    0%   { background: color-mix(in srgb, var(--accent-family) 22%, transparent); box-shadow: inset 3px 0 0 var(--accent-family); }
+    60%  { background: color-mix(in srgb, var(--accent-family) 10%, transparent); box-shadow: inset 3px 0 0 var(--accent-family); }
+    100% { background: transparent; box-shadow: inset 3px 0 0 transparent; }
+  }
+  .loc:hover {
+    background: color-mix(in srgb, var(--accent-roy) 4%, transparent);
+  }
+  .day.family .loc:hover {
+    background: color-mix(in srgb, var(--accent-family) 5%, transparent);
+  }
+  .map-print-fallback {
+    display: none;
+    margin: 0.5rem 0 1.5rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--line);
+    background: var(--bg-surface);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .map-print-fallback strong { color: var(--ink); font-weight: 600; }
+
+  /* Footer */
+  .site-foot {
+    margin: 5rem 0 0;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    color: var(--ink-muted);
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* =========== PRINT =========== */
+  @media print {
+    @page { margin: 16mm 14mm; }
+    html, body {
+      background: #fff !important;
+      color: #000 !important;
+      font-size: 11pt;
+      line-height: 1.5;
+    }
+    .site-header, .timeline-wrap, .tips { display: none !important; }
+    .main { max-width: none; margin: 0; padding: 0; }
+    .section-header { margin-top: 1rem; page-break-before: auto; }
+    .section-header.first { margin-top: 0; }
+    #section-family { page-break-before: always; }
+    .day { page-break-inside: avoid; border-top-color: #ccc; margin: 1.5rem 0; padding-top: 1rem; }
+    .map-print-fallback { display: none !important; }
+    .day-map {
+      display: block !important;
+      height: 220px !important;
+      page-break-inside: avoid;
+      border: 1px solid #ccc !important;
+      margin: 0.5rem 0 1.2rem !important;
+    }
+    .leaflet-container { background: #fff !important; }
+    .leaflet-tile-pane { filter: none !important; }
+    .leaflet-control-zoom, .leaflet-control-attribution { display: none !important; }
+    .leaflet-popup-pane, .leaflet-tooltip-pane { display: none !important; }
+    .loc { page-break-inside: avoid; }
+    .basing { border-left-color: #888; }
+    a, a:visited { color: #000 !important; text-decoration: underline; }
+    .section-title .accent-roy, .section-title .accent-family,
+    .day-eyebrow, .section-eyebrow { color: #000 !important; }
+    .site-foot { display: none; }
+  }
+
+  /* Mobile tweaks */
+  @media (max-width: 720px) {
+    .header-inner { padding: 0 1.25rem; }
+    .main { padding: 2rem 1.25rem 3.5rem; }
+    .timeline { padding: 0 1.25rem; }
+    .timeline-bar { padding: 0.45rem 1.25rem 0; }
+    .section-title { font-size: 1.75rem; }
+    .day-title { font-size: 1.5rem; }
+    .day-head { gap: 0.75rem; }
+    .pdf-btn { padding: 0.5rem 0.7rem; font-size: 0.75rem; }
+    .day-map { height: 240px; }
+    .timeline-week .week-name { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div>
+      <h1 class="site-title">Japan — November
+        <span class="site-subtitle">Roy &amp; Family · Two Weeks</span>
+      </h1>
+    </div>
+    <div class="header-actions">
+      <button class="pdf-btn" type="button" id="pdfBtn">Download PDF ↓</button>
+      <button class="icon-btn" type="button" id="themeBtn" aria-label="Toggle dark mode" title="Toggle theme">
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="sun"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<nav class="timeline-wrap" id="timelineWrap" data-expanded="false" aria-label="Trip timeline">
+  <div class="timeline-bar">
+    <div class="timeline-week" id="timelineWeek" data-seg="roy">
+      <span class="week-num">Week 1</span>
+      <span class="week-divider"></span>
+      <span class="week-name">Tokyo · Roy solo</span>
+    </div>
+    <button class="timeline-expand" type="button" id="timelineExpandBtn" aria-expanded="false">
+      <span class="expand-label">Show full trip</span>
+      <span class="chev">▾</span>
+    </button>
+  </div>
+  <div class="timeline">
+    <div class="timeline-track-wrap" id="timelineTrackWrap">
+      <div class="timeline-track" id="timelineTrack"></div>
+    </div>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- ============ GENERAL TIPS ============ -->
+  <section class="tips" data-open="true" id="tips">
+    <button class="tips-root" type="button" id="tipsRoot" aria-expanded="true" aria-controls="tipsBody">
+      <span class="leading"><span class="glyph">✈</span><span>General Travel Tips</span></span>
+      <span class="chev">▾</span>
+    </button>
+    <div class="tips-body" id="tipsBody">
+      <div class="tips-inner">
+
+        <div class="tip-section" data-open="false">
+          <button class="tip-head" type="button" aria-expanded="false">
+            <span class="leading"><span class="glyph">🚇</span><span>Getting Around</span></span>
+            <span class="chev">▾</span>
+          </button>
+          <div class="tip-section-body">
+            <div class="tip-section-inner">
+              <p><strong>Suica Card</strong> — Get one each on arrival. Works on all trains, buses, and even convenience stores. Load money onto it and tap on/off everything.</p>
+              <p><strong>Shinkansen Pass</strong> — No longer worth it for most tourists. Only covers JR lines — privately owned lines are not included, and there are a lot of them. Only consider it if you are on a shinkansen literally every single day.</p>
+              <p><strong>Google Maps</strong> — Works excellently for train navigation in Japan. Use it for everything.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-section" data-open="false">
+          <button class="tip-head" type="button" aria-expanded="false">
+            <span class="leading"><span class="glyph">🛬</span><span>Getting To and From the Airport</span></span>
+            <span class="chev">▾</span>
+          </button>
+          <div class="tip-section-body">
+            <div class="tip-section-inner">
+              <p><strong>Airport Limousine Bus</strong> — Highly recommended over trains or taxis. Handles luggage properly — no lugging bags through peak hour trains. Much better for elderly parents or anyone with multiple bags. Runs direct routes between airports and major city hotels.</p>
+              <p><strong>Avoid trains at peak hour with luggage</strong> — it's a nightmare.</p>
+              <p><strong>Avoid taxis for groups</strong> — limited on how many people and bags fit, and expensive.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-section" data-open="false">
+          <button class="tip-head" type="button" aria-expanded="false">
+            <span class="leading"><span class="glyph">🧳</span><span>Managing Luggage</span></span>
+            <span class="chev">▾</span>
+          </button>
+          <div class="tip-section-body">
+            <div class="tip-section-inner">
+              <p><strong>Bounce Luggage</strong> — On your last day after checkout, store bags at a local partner business, pay per piece, collect later. Explore hands-free. <a href="https://usebounce.com" target="_blank" rel="noopener noreferrer">usebounce.com</a></p>
+              <p><strong>Takkyubin (luggage forwarding)</strong> — Send bags between cities ahead of you. Drop off at hotel front desk or any convenience store (Lawson, FamilyMart, 7-Eleven). Have your receiving address ready in Japanese. Arrives next day — plan ahead.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-section" data-open="false">
+          <button class="tip-head" type="button" aria-expanded="false">
+            <span class="leading"><span class="glyph">📶</span><span>Staying Connected</span></span>
+            <span class="chev">▾</span>
+          </button>
+          <div class="tip-section-body">
+            <div class="tip-section-inner">
+              <p><strong>eSIM</strong> — Get one via <a href="https://www.klook.com" target="_blank" rel="noopener noreferrer">Klook</a> before you leave. Search "Japan eSIM". Activate it at home so you are connected the moment you land. No hunting for a SIM at the airport.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-section" data-open="false">
+          <button class="tip-head" type="button" aria-expanded="false">
+            <span class="leading"><span class="glyph">💴</span><span>Money</span></span>
+            <span class="chev">▾</span>
+          </button>
+          <div class="tip-section-body">
+            <div class="tip-section-inner">
+              <p>Japan is still very cash-heavy — smaller restaurants, shrines, local spots, and vending machines are often cash only. Never assume card is accepted.</p>
+              <p>Get yen at the airport or 7-Eleven ATMs — most reliable for foreign cards. Keep cash on you at all times.</p>
+              <p>Check your debit card for foreign transaction fees. Some cards (e.g. Ubank) have zero fees — use these wherever card is accepted.</p>
+              <p>When paying by card, always select <strong>pay in JPY</strong> (not AUD). The merchant's forex rate is almost always worse than your bank's rate. Applies to every card transaction.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ROY ============ -->
+  <header class="section-header first" id="section-roy" data-screen-label="Roy — Tokyo">
+    <p class="section-eyebrow">Week One</p>
+    <h2 class="section-title"><span class="accent-roy">Roy</span> — Tokyo <span style="color: var(--ink-muted); font-weight: 400;">·</span> Solo</h2>
+    <p class="section-intro">Three days in the city, a day trip to Yokohama, then overnight in Hakone before heading south to Osaka.</p>
+  </header>
+  <div id="roy-days" class="roy"><!-- day blocks injected --></div>
+
+  <!-- ============ FAMILY ============ -->
+  <header class="section-header" id="section-family" data-screen-label="Family — Osaka">
+    <p class="section-eyebrow">Week Two</p>
+    <h2 class="section-title"><span class="accent-family">Roy + Family</span> — Osaka</h2>
+    <p class="section-intro">A week together — good food, easy day trips, and a possible overnight in Kyoto.</p>
+    <p class="basing"><strong>Stay in Namba</strong> — heart of Osaka, main transit hub, gets you anywhere fast.</p>
+  </header>
+  <div id="family-days" class="family"><!-- day blocks injected --></div>
+
+  <footer class="site-foot">
+    Japan · November · For Roy and family
+  </footer>
+</main>
+
+<script>
+/* =========================================================
+ * DATA
+ * ========================================================= */
+const DAYS = [
+  /* ---------- ROY ---------- */
+  {
+    id: "roy-1",
+    segment: "roy",
+    eyebrow: "Day 1",
+    timelineLabel: "Day 1",
+    timelineSub: "Ueno · Akiba",
+    title: "Ueno + Akihabara",
+    summary: "Two neighbourhoods, walkable between them. Start Ueno in the morning, Akihabara in the afternoon.",
+    center: [35.7089, 139.7741],
+    zoom: 14,
+    locations: [
+      { name: "Ameyokocho Street Market", coords: [35.7089, 139.7741], bullets: [
+        "Busy, loud, great street food, vendors haggling — a great first taste of Tokyo with a lot of eateries, shops, and general fun to be had (think karaoke, arcades, and pachinko parlors) "
+      ]},
+      { name: "Ueno Park", coords: [35.7148, 139.7726], bullets: [
+        "Gorgeous in November for autumn foliage",
+        "Shinobazu Pond — peaceful spot in the middle of the park",
+        "Autumn light-up — park does evening illuminations, worth timing dinner nearby and coming back after dark"
+      ]},
+      { name: "Tokyo National Museum", coords: [35.7188, 139.7767], bullets: [
+        "Largest art and antiquity collection in Japan"
+      ]},
+      { name: "Ueno Zoo", coords: [35.7167, 139.7717], bullets: [
+        "Optional if keen. There is a giant whale in the park somewhere for you to find 👀"
+      ]},
+      { name: "Akihabara", coords: [35.7022, 139.7741], bullets: [
+        "Multi-floor arcades — claw machines, rhythm games",
+        "Retro game shops — old consoles, cartridges, figures",
+        "Figure and anime merchandise shops — the scale is wild even if not into it",
+        "Maid cafes — chaotic and bizarre in the best way, worth doing once for the experience"
+      ]}
+    ]
+  },
+  {
+    id: "roy-2",
+    segment: "roy",
+    eyebrow: "Day 2",
+    timelineLabel: "Day 2",
+    timelineSub: "Harajuku · Shibuya",
+    title: "Harajuku + Shibuya",
+    summary: "Start at the shrine, work through Harajuku, end the day in Shibuya.",
+    center: [35.6618, 139.7024],
+    zoom: 14,
+    locations: [
+      { name: "Meiji Jingu Shrine", coords: [35.6763, 139.6993], bullets: [
+        "Walk on the <strong>sides</strong> of the gravel path — the middle is reserved for the gods",
+        "Peaceful, forested, completely removed from the city chaos outside"
+      ]},
+      { name: "Yoyogi Park", coords: [35.6715, 139.6942], bullets: [
+        "Right next to the shrine — great for a sit down if the weather is nice"
+      ]},
+      { name: "Ura-Harajuku / Cat Street", coords: [35.6670, 139.7066], bullets: [
+        "Back alley shopping, second hand and vintage stores",
+        "Less touristy than Takeshita Street, better finds"
+      ]},
+      { name: "Takeshita Street", coords: [35.6703, 139.7027], bullets: [
+        "Chaotic, colourful packed with colorful boutiques, creperies, and trendy snack shops — worth a look even if not buying anything"
+      ]},
+      { name: "Shibuya Scramble Crossing", coords: [35.6595, 139.7004], bullets: [
+        "Go at peak hour late afternoon for maximum chaos of random tourists running trying to get a good tiktok shot in the middle. "
+      ]},
+      { name: "Shibuya Sky", coords: [35.6580, 139.7016], bullets: [
+        "Rooftop observatory — great views especially at dusk"
+      ]},
+      { name: "Hachiko Statue", coords: [35.6591, 139.7005], bullets: [
+        "Iconic meeting point, good for a photo with the good doggo 🐶"
+      ]},
+      { name: "Hachigatsu no Kujira (The Whales of August)", coords: [35.6590, 139.6996], bullets: [
+        "Movie-themed cocktail bar — great for solo drinks in the evening",
+        "Every drink is based on a film, staff are lovely and can speak a bit of English. If you describe your mood/taste they'll rec a movie and cocktail. "
+      ]},
+      { name: "Nonbei Yokocho", coords: [35.6564, 139.7028], bullets: [
+        "Narrow alleyway of tiny bars — very atmospheric at night"
+      ]},
+      { name: "Record and vintage shops", coords: [35.6610, 139.6990], bullets: [
+        "Scattered around Shibuya, good for a browse"
+      ]}
+    ]
+  },
+  {
+    id: "roy-3",
+    segment: "roy",
+    eyebrow: "Day 3",
+    timelineLabel: "Day 3",
+    timelineSub: "Yokohama",
+    title: "Yokohama (day trip)",
+    summary: "About 30 mins from central Tokyo by train. Easy, no early start needed.",
+    center: [35.4437, 139.6380],
+    zoom: 13,
+    locations: [
+      { name: "Chinatown", coords: [35.4427, 139.6481], bullets: [
+        "One of the biggest in Asia — great for lunch and grazing, lots of street food"
+      ]},
+      { name: "Minato Mirai Waterfront", coords: [35.4560, 139.6317], bullets: [
+        "Harbour area, scenic, relaxed pace — good for a slow walk"
+      ]},
+      { name: "Cup Noodles Museum", coords: [35.4556, 139.6326], bullets: [
+        "Design your own cup noodle — genuinely fun"
+      ]},
+      { name: "Yamashita Park", coords: [35.4436, 139.6521], bullets: [
+        "Pleasant waterfront park, good views of the bay"
+      ]},
+      { name: "Red Brick Warehouse (Aka Renga)", coords: [35.4567, 139.6401], bullets: [
+        "Converted heritage warehouses, shops and cafes along the water"
+      ]},
+      { name: "Sankeien Garden", coords: [35.4143, 139.6508], bullets: [
+        "Traditional Japanese garden — beautiful in November autumn foliage"
+      ]}
+    ]
+  },
+  {
+    id: "roy-45",
+    segment: "roy",
+    eyebrow: "Day 4 – 5",
+    timelineLabel: "Day 4–5",
+    timelineSub: "Hakone",
+    title: "Hakone (overnight)",
+    summary: "Take the Romancecar from Shinjuku — scenic and a fun experience in itself. Stay at a ryokan here — this is the place to do it.",
+    center: [35.2322, 139.0210],
+    zoom: 12,
+    locations: [
+      { name: "Owakudani", coords: [35.2530, 139.0217], bullets: [
+        "Volcanic valley with sulphur vents",
+        "Try the black eggs — cooked in the hot springs"
+      ]},
+      { name: "Hakone Ropeway", coords: [35.2447, 139.0259], bullets: [
+        "Rides over the volcanic valley with great views"
+      ]},
+      { name: "Lake Ashi", coords: [35.1983, 139.0214], bullets: [
+        "Boat cruise across the lake",
+        "Mt Fuji views if weather is clear — November can be excellent for this"
+      ]},
+      { name: "Hakone Open Air Museum", coords: [35.2506, 139.0491], bullets: [
+        "Sculpture park, genuinely impressive and easy to walk around"
+      ]},
+      { name: "Ryokan stay", coords: null, bullets: [
+        "Tatami room, yukata, multi-course kaiseki dinner, communal onsen — don't skip this",
+        "Morning onsen soak before checkout is non-negotiable"
+      ]},
+      { name: "Odawara Castle", coords: [35.2561, 139.1555], bullets: [
+        "Near the shinkansen station — quick visit before heading off if time allows",
+        "Then shinkansen from Odawara straight down to Osaka — perfectly positioned, no backtracking"
+      ]}
+    ]
+  },
+
+  /* ---------- FAMILY ---------- */
+  {
+    id: "fam-1",
+    segment: "family",
+    eyebrow: "Day 1",
+    timelineLabel: "Day 1",
+    timelineSub: "Dotonbori",
+    title: "Arrive + Dotonbori",
+    summary: "Settle in, get your bearings, easy first evening.",
+    center: [34.6687, 135.5014],
+    zoom: 15,
+    locations: [
+      { name: "Dotonbori Canal", coords: [34.6687, 135.5014], bullets: [
+        "Best at night when it's all lit up — great first impression of Osaka",
+        "First takoyaki — go to a local spot, avoid the giant tourist trap signs",
+        "Glico Running Man sign — iconic photo spot"
+      ]},
+      { name: "Hozenji Yokocho", coords: [34.6681, 135.5030], bullets: [
+        "Small atmospheric alleyway, moss-covered stone Buddha",
+        "Good for a quiet drink after dinner"
+      ]}
+    ]
+  },
+  {
+    id: "fam-2",
+    segment: "family",
+    eyebrow: "Day 2",
+    timelineLabel: "Day 2",
+    timelineSub: "Kuromon · Shop",
+    title: "Kuromon Market + Shopping",
+    summary: "Covered market in the morning, shopping in the afternoon — no weather worries.",
+    center: [34.6710, 135.5025],
+    zoom: 15,
+    locations: [
+      { name: "Kuromon Ichiba Market", coords: [34.6694, 135.5078], bullets: [
+        "Graze, fresh seafood, street snacks, very lively atmosphere"
+      ]},
+      { name: "Tokyu Hands", coords: [34.6717, 135.5013], bullets: [
+        "Fashion, homewares, stationery, gadgets — a bit of everything, easy to spend hours here"
+      ]},
+      { name: "Mega Don Quijote", coords: [34.6690, 135.5016], bullets: [
+        "Souvenirs, electronics, snacks, beauty products",
+        "<span class=\"warn\">Heads up:</span> Avoid the Dotonbori branch — tourist nightmare. Find a quieter one that is still called MEGA Donki and you should be good."
+      ]},
+      { name: "Shinsaibashi Covered Arcade", coords: [34.6738, 135.5013], bullets: [
+        "Easy flat walking, great for browsing"
+      ]},
+      { name: "Amerikamura", coords: [34.6721, 135.4987], bullets: [
+        "Quirky vintage and streetwear if anyone's interested"
+      ]},
+      { name: "Depachika (department store basement food halls)", coords: null, bullets: [
+        "Incredible for sweets, prepared foods, and omiyage",
+        "Any major department store basement — Takashimaya or Daimaru are good bets"
+      ]}
+    ]
+  },
+  {
+    id: "fam-3",
+    segment: "family",
+    eyebrow: "Day 3",
+    timelineLabel: "Day 3",
+    timelineSub: "Aquarium",
+    title: "Osaka Aquarium",
+    summary: "Book tickets online before leaving Australia — time-slotted entry. Eat a proper meal before going in, limited food inside.",
+    center: [34.6551, 135.4292],
+    zoom: 14,
+    locations: [
+      { name: "Kaiyukan Aquarium", coords: [34.6551, 135.4292], bullets: [
+        "World class — the whale shark tank is the centrepiece",
+        "Allow 2–3 hours inside"
+      ]},
+      { name: "Tempozan Waterfront", coords: [34.6564, 135.4303], bullets: [
+        "Pleasant walk after the aquarium, good harbour views"
+      ]},
+      { name: "Tempozan Ferris Wheel", coords: [34.6557, 135.4285], bullets: [
+        "Great views over Osaka Bay"
+      ]},
+      { name: "Osaka Museum of History", coords: [34.6826, 135.5219], bullets: [
+        "Good if anyone wants more context on the city — nearby and easy to add on"
+      ]}
+    ]
+  },
+  {
+    id: "fam-4",
+    segment: "family",
+    eyebrow: "Day 4",
+    timelineLabel: "Day 4",
+    timelineSub: "Nara",
+    title: "Nara (day trip)",
+    summary: "45 mins by train from Namba. Buy deer crackers at the entrance — the deer will bow at you, headbutt you, and mob you. Watch your bags. Watch your shoes (don't wear the nice ones, might step on deer poop 💩)",
+    center: [34.6851, 135.8050],
+    zoom: 13,
+    locations: [
+      { name: "Nara Deer Park", coords: [34.6851, 135.8403], bullets: [
+        "Free-roaming deer, buy crackers from the vendors at the entrance",
+        "They genuinely bow for food — surreal and hilarious",
+        "November foliage turns the park completely golden"
+      ]},
+      { name: "Todai-ji Temple", coords: [34.6888, 135.8398], bullets: [
+        "One of Japan's largest wooden structures, houses a massive Buddha",
+        "Short flat walk from the deer park"
+      ]},
+      { name: "Kasuga Taisha Shrine", coords: [34.6813, 135.8482], bullets: [
+        "Beautiful lantern shrine tucked into the forest"
+      ]},
+      { name: "Naramachi", coords: [34.6748, 135.8323], bullets: [
+        "Old merchant district, quiet streets — good for a slow wander and lunch"
+      ]}
+    ]
+  },
+  {
+    id: "fam-5",
+    segment: "family",
+    eyebrow: "Day 5",
+    timelineLabel: "Day 5",
+    timelineSub: "Castle · Spa",
+    title: "Osaka Castle + slow afternoon",
+    summary: "Morning activity, deliberately light afternoon.",
+    center: [34.6700, 135.5170],
+    zoom: 13,
+    locations: [
+      { name: "Osaka Castle", coords: [34.6873, 135.5262], bullets: [
+        "Grounds are beautiful in autumn foliage — great for photos",
+        "Castle has a lift — no stairs required",
+        "Museum inside traces the history of the castle and Toyotomi clan (optional)"
+      ]},
+      { name: "Nishinomaru Garden", coords: [34.6891, 135.5228], bullets: [
+        "Within the castle grounds — lovely spot to sit and enjoy the foliage"
+      ]},
+      { name: "Shinsekai", coords: [34.6521, 135.5063], bullets: [
+        "Retro Osaka neighbourhood nearby — good for kushikatsu and atmosphere"
+      ]},
+      { name: "Spa World", coords: [34.6512, 135.5069], bullets: [
+        "Proper onsen complex right in this area — great if parents want a soak"
+      ]}
+    ]
+  },
+  {
+    id: "fam-67",
+    segment: "family",
+    eyebrow: "Day 6 – 7",
+    timelineLabel: "Day 6–7",
+    timelineSub: "Kyoto",
+    title: "Kyoto",
+    summary: "Worth staying overnight rather than day tripping. Check the overtourism situation closer to the date — certain spots have introduced crowd control measures.",
+    center: [35.0116, 135.7681],
+    zoom: 12,
+    locations: [
+      { name: "Arashiyama", coords: [35.0094, 135.6727], bullets: [
+        "Bamboo grove, Tenryu-ji garden, riverside area",
+        "Stunning in November foliage — this is the priority"
+      ]},
+      { name: "Fushimi Inari", coords: [34.9671, 135.7727], bullets: [
+        "The thousand torii gates — iconic",
+        "Involves uphill walking, but even just the base section is worth it"
+      ]},
+      { name: "Kinkaku-ji (Golden Pavilion)", coords: [35.0394, 135.7292], bullets: [
+        "One of Japan's most iconic sights"
+      ]},
+      { name: "Nijo Castle", coords: [35.0142, 135.7480], bullets: [
+        "Beautifully preserved shogunate castle",
+        "Famous for its \"nightingale floors\" — they squeak to detect intruders"
+      ]},
+      { name: "Philosopher's Path", coords: [35.0272, 135.7938], bullets: [
+        "Canal-side walking path — stunning in autumn foliage"
+      ]},
+      { name: "Nishiki Market", coords: [35.0052, 135.7658], bullets: [
+        "Good for snacks, pickles, and a food browse"
+      ]},
+      { name: "Gion District", coords: [35.0036, 135.7758], bullets: [
+        "Beautiful to walk through especially in the evening",
+        "Chance of spotting a geisha"
+      ]},
+      { name: "Pontocho Alley", coords: [35.0042, 135.7700], bullets: [
+        "Narrow lantern-lit dining alley running parallel to the river",
+        "Great spot for dinner"
+      ]}
+    ]
+  },
+  {
+    id: "fam-hiro",
+    segment: "family",
+    optional: true,
+    eyebrow: "Optional",
+    timelineLabel: "Optional",
+    timelineSub: "Hiroshima",
+    title: "Hiroshima",
+    summary: "Ambitious add-on if there's a spare day and the mood is right. ~90 mins on the shinkansen from Osaka. Go in knowing it's emotionally heavy.",
+    center: [34.3955, 132.4536],
+    zoom: 11,
+    locations: [
+      { name: "Peace Memorial Museum", coords: [34.3914, 132.4525], bullets: [
+        "Important but emotionally heavy — go in prepared"
+      ]},
+      { name: "Peace Memorial Park", coords: [34.3955, 132.4536], bullets: [
+        "Outdoor, contemplative — the A-Bomb Dome is striking"
+      ]},
+      { name: "Miyajima Island", coords: [34.2959, 132.3195], bullets: [
+        "Floating torii gate, short ferry from Hiroshima",
+        "Deer roam here too"
+      ]},
+      { name: "Hiroshima-style okonomiyaki", coords: null, bullets: [
+        "Completely different to Osaka style — worth trying while here"
+      ]}
+    ]
+  }
+];
+
+const TIMELINE_FLAGS = [
+  { kind: "flag", glyph: "✈", text: "Depart" },
+  { kind: "stops", segment: "roy", ids: ["roy-1","roy-2","roy-3","roy-45"] },
+  { kind: "flag", glyph: "✈", text: "Osaka" },
+  { kind: "stops", segment: "family", ids: ["fam-1","fam-2","fam-3","fam-4","fam-5","fam-67","fam-hiro"] },
+  { kind: "flag", glyph: "✈", text: "Home" }
+];
+
+/* =========================================================
+ * UTILITIES
+ * ========================================================= */
+function mapsUrl(name) {
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(name + " Japan").replace(/%20/g, "+");
+}
+function el(tag, opts = {}, children = []) {
+  const e = document.createElement(tag);
+  if (opts.class) e.className = opts.class;
+  if (opts.id) e.id = opts.id;
+  if (opts.html != null) e.innerHTML = opts.html;
+  if (opts.text != null) e.textContent = opts.text;
+  if (opts.attrs) for (const k in opts.attrs) e.setAttribute(k, opts.attrs[k]);
+  if (opts.style) for (const k in opts.style) e.style[k] = opts.style[k];
+  for (const c of children) if (c) e.appendChild(c);
+  return e;
+}
+function pad2(n) { return String(n).padStart(2, "0"); }
+
+/* =========================================================
+ * RENDER DAY BLOCKS
+ * ========================================================= */
+function renderDay(day, idxWithinSeg) {
+  const accentVar = day.segment === "roy" ? "var(--accent-roy)" : "var(--accent-family)";
+
+  const head = el("div", { class: "day-head" }, [
+    el("div", { class: "day-head-left" }, [
+      el("p", { class: "day-eyebrow", text: day.eyebrow }),
+      el("h3", { class: "day-title", text: day.title })
+    ]),
+    el("p", { class: "day-summary", text: day.summary })
+  ]);
+
+  const mapDiv = el("div", {
+    class: "day-map is-loading",
+    id: "map-" + day.id,
+    attrs: { "aria-label": "Map of " + day.title }
+  });
+
+  const printFallbackNames = day.locations
+    .filter(l => l.coords)
+    .map(l => l.name);
+  const printFallback = el("div", { class: "map-print-fallback" });
+  printFallback.innerHTML = '<strong>Map locations:</strong> ' + printFallbackNames.join(", ");
+
+  const locsGrid = el("div", { class: "locations" });
+  day.locations.forEach((loc, i) => {
+    const locWrap = el("div", { class: "loc", attrs: { "data-day-id": day.id, "data-loc-idx": i } });
+    const head = el("div", { class: "loc-head" });
+    head.appendChild(el("span", { class: "loc-num", text: pad2(i + 1) }));
+    if (loc.coords) {
+      const a = el("a", {
+        attrs: { href: mapsUrl(loc.name), target: "_blank", rel: "noopener noreferrer" },
+        text: loc.name
+      });
+      const h4 = el("h4", { class: "loc-name" });
+      h4.appendChild(a);
+      head.appendChild(h4);
+    } else {
+      head.appendChild(el("h4", { class: "loc-name plain", text: loc.name }));
+    }
+    locWrap.appendChild(head);
+
+    const ul = el("ul");
+    loc.bullets.forEach(b => {
+      const li = el("li");
+      li.innerHTML = b;
+      ul.appendChild(li);
+    });
+    locWrap.appendChild(ul);
+    locsGrid.appendChild(locWrap);
+  });
+
+  const dayEl = el("article", {
+    class: "day" + (day.optional ? " optional" : ""),
+    id: "day-" + day.id,
+    attrs: { "data-screen-label": (day.segment === "roy" ? "Roy " : "Family ") + day.eyebrow + " — " + day.title }
+  });
+  dayEl.appendChild(head);
+  dayEl.appendChild(mapDiv);
+  dayEl.appendChild(printFallback);
+  dayEl.appendChild(locsGrid);
+
+  return dayEl;
+}
+
+(function renderDays() {
+  const royRoot = document.getElementById("roy-days");
+  const famRoot = document.getElementById("family-days");
+  let r = 0, f = 0;
+  DAYS.forEach(d => {
+    if (d.segment === "roy") royRoot.appendChild(renderDay(d, r++));
+    else famRoot.appendChild(renderDay(d, f++));
+  });
+})();
+
+/* =========================================================
+ * TIMELINE
+ * ========================================================= */
+(function renderTimeline() {
+  const track = document.getElementById("timelineTrack");
+  const trackWrap = document.getElementById("timelineTrackWrap");
+  const wrap = document.getElementById("timelineWrap");
+  const weekEl = document.getElementById("timelineWeek");
+  const weekNum = weekEl.querySelector(".week-num");
+  const weekName = weekEl.querySelector(".week-name");
+  const expandBtn = document.getElementById("timelineExpandBtn");
+  const expandLabel = expandBtn.querySelector(".expand-label");
+
+  let expanded = false;
+  let activeWeek = "roy"; // which week is currently shown when collapsed
+  let activeId = null;
+
+  function positionPlane() {
+    const active = track.querySelector('.timeline-stop.active');
+    if (!active) return;
+    // Center the active stop in the scroll viewport
+    const scroller = track.parentElement.parentElement; // .timeline
+    const sRect = active.getBoundingClientRect();
+    const pRect = scroller.getBoundingClientRect();
+    const desiredScroll = scroller.scrollLeft + (sRect.left - pRect.left) - (pRect.width / 2 - sRect.width / 2);
+    scroller.scrollTo({ left: desiredScroll, behavior: "smooth" });
+  }
+
+  function makeFlag(glyph, text) {
+    const wrap = el("div", { class: "timeline-stop", attrs: { "data-seg": "edge", "data-flag": "true" } });
+    wrap.appendChild(el("span", { class: "label", html: glyph + " " + text }));
+    wrap.appendChild(el("span", { class: "dot", style: { background: "transparent", borderColor: "var(--ink-muted)" } }));
+    return wrap;
+  }
+  function makeConnector(klass) {
+    return el("div", { class: "timeline-connector " + klass });
+  }
+  function makeStop(day) {
+    const btn = el("button", {
+      class: "timeline-stop",
+      attrs: { type: "button", "data-target": "day-" + day.id, "data-seg": day.segment, "data-id": day.id }
+    });
+    btn.appendChild(el("span", { class: "label", text: day.timelineLabel }));
+    btn.appendChild(el("span", { class: "sub", text: day.timelineSub }));
+    btn.appendChild(el("span", { class: "dot" }));
+    btn.addEventListener("click", () => {
+      const tgt = document.getElementById(btn.dataset.target);
+      if (tgt) tgt.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return btn;
+  }
+
+  function render() {
+    track.innerHTML = "";
+    track.style.flexDirection = expanded ? "column" : "row";
+    track.style.alignItems = expanded ? "flex-start" : "center";
+    if (expanded) {
+      // Two rows: Week 1 (Roy) on top, Week 2 (Family) on bottom
+      ["roy", "family"].forEach(seg => {
+        const row = el("div", { class: "timeline-row", attrs: { "data-week": seg } });
+        const stopsGroup = TIMELINE_FLAGS.find(t => t.kind === "stops" && t.segment === seg);
+        const idx = TIMELINE_FLAGS.indexOf(stopsGroup);
+        const beforeFlag = idx > 0 ? TIMELINE_FLAGS[idx - 1] : null;
+        const afterFlag = idx < TIMELINE_FLAGS.length - 1 ? TIMELINE_FLAGS[idx + 1] : null;
+        if (beforeFlag && beforeFlag.kind === "flag") {
+          row.appendChild(makeFlag(beforeFlag.glyph, beforeFlag.text));
+          row.appendChild(makeConnector("seg-" + seg));
+        }
+        stopsGroup.ids.forEach((id, i) => {
+          if (i > 0) row.appendChild(makeConnector("seg-" + seg));
+          row.appendChild(makeStop(DAYS.find(d => d.id === id)));
+        });
+        if (afterFlag && afterFlag.kind === "flag") {
+          row.appendChild(makeConnector("seg-" + seg));
+          row.appendChild(makeFlag(afterFlag.glyph, afterFlag.text));
+        }
+        track.appendChild(row);
+      });
+    } else {
+      // Single week view
+      const stopsGroup = TIMELINE_FLAGS.find(t => t.kind === "stops" && t.segment === activeWeek);
+      const idx = TIMELINE_FLAGS.indexOf(stopsGroup);
+      const beforeFlag = idx > 0 ? TIMELINE_FLAGS[idx - 1] : null;
+      const afterFlag = idx < TIMELINE_FLAGS.length - 1 ? TIMELINE_FLAGS[idx + 1] : null;
+      if (beforeFlag && beforeFlag.kind === "flag") {
+        track.appendChild(makeFlag(beforeFlag.glyph, beforeFlag.text));
+        track.appendChild(makeConnector("seg-" + activeWeek));
+      }
+      stopsGroup.ids.forEach((id, i) => {
+        if (i > 0) track.appendChild(makeConnector("seg-" + activeWeek));
+        track.appendChild(makeStop(DAYS.find(d => d.id === id)));
+      });
+      if (afterFlag && afterFlag.kind === "flag") {
+        track.appendChild(makeConnector("seg-" + activeWeek));
+        track.appendChild(makeFlag(afterFlag.glyph, afterFlag.text));
+      }
+    }
+    // Reapply active class + position plane
+    if (activeId) {
+      const s = track.querySelector('[data-id="' + activeId + '"]');
+      if (s) s.classList.add("active");
+    }
+    positionPlane();
+  }
+
+  function setWeek(seg) {
+    activeWeek = seg;
+    weekEl.dataset.seg = seg;
+    if (seg === "roy") {
+      weekNum.textContent = "Week 1";
+      weekName.textContent = "Tokyo · Roy solo";
+    } else {
+      weekNum.textContent = "Week 2";
+      weekName.textContent = "Osaka · Family";
+    }
+  }
+
+  function setExpanded(v) {
+    expanded = v;
+    wrap.dataset.expanded = v ? "true" : "false";
+    expandBtn.setAttribute("aria-expanded", v ? "true" : "false");
+    expandLabel.textContent = v ? "Show week view" : "Show full trip";
+    weekEl.style.visibility = v ? "hidden" : "visible";
+    render();
+  }
+
+  expandBtn.addEventListener("click", () => setExpanded(!expanded));
+
+  function setActive(id) {
+    if (id === activeId) return;
+    activeId = id;
+    if (!id) return;
+    const day = DAYS.find(d => d.id === id);
+    if (!day) return;
+    // If collapsed and the day is in the other week, switch the week
+    if (!expanded && day.segment !== activeWeek) {
+      setWeek(day.segment);
+      render();
+    } else {
+      track.querySelectorAll(".timeline-stop").forEach(s => s.classList.remove("active"));
+      const s = track.querySelector('[data-id="' + id + '"]');
+      if (s) s.classList.add("active");
+      positionPlane();
+    }
+  }
+
+  // Initial render
+  setWeek("roy");
+  render();
+
+  // Reposition plane on resize
+  window.addEventListener("resize", () => requestAnimationFrame(positionPlane));
+
+  const sections = DAYS.map(d => document.getElementById("day-" + d.id)).filter(Boolean);
+  const visibility = new Map();
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { visibility.set(e.target.id, e.intersectionRatio); });
+    let best = null, bestRatio = 0;
+    visibility.forEach((ratio, id) => { if (ratio > bestRatio) { bestRatio = ratio; best = id; } });
+    if (best) setActive(best.replace(/^day-/, ""));
+  }, { rootMargin: "-30% 0px -55% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] });
+  sections.forEach(s => observer.observe(s));
+})();
+
+/* =========================================================
+ * MAPS (Leaflet)
+ * ========================================================= */
+const mapInstances = [];
+  const LIGHT_TILE_URL = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+  const DARK_TILE_URL  = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+const TILE_ATTR = '&copy; <a href="https://openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
+
+function initMap(day) {
+  const id = "map-" + day.id;
+  const node = document.getElementById(id);
+  if (!node || !window.L) return;
+  node.classList.remove("is-loading");
+
+  const map = L.map(node, {
+    scrollWheelZoom: false,
+    zoomControl: true,
+    attributionControl: true
+  }).setView(day.center, day.zoom);
+
+  const isDark = document.documentElement.classList.contains("dark");
+  const tile = L.tileLayer(isDark ? DARK_TILE_URL : LIGHT_TILE_URL, {
+    attribution: TILE_ATTR,
+    subdomains: "abcd",
+    maxZoom: 19
+  }).addTo(map);
+
+  const fillColor = day.segment === "roy" ? "#c5522a" : "#3a5f8a";
+  const fillColorDark = day.segment === "roy" ? "#e0724a" : "#5b8ab5";
+
+  const markers = [];
+  day.locations.forEach((loc, i) => {
+    if (!loc.coords) return;
+    const m = L.circleMarker(loc.coords, {
+      radius: 7,
+      fillColor: isDark ? fillColorDark : fillColor,
+      color: "#ffffff",
+      weight: 2,
+      fillOpacity: 1
+    }).addTo(map);
+
+    const url = mapsUrl(loc.name);
+    const popupHtml =
+      '<div class="map-popup">' +
+        '<div style="font-weight:600;">' + (i + 1) + '. ' + loc.name.replace(/</g, "&lt;") + '</div>' +
+        '<a href="' + url + '" target="_blank" rel="noopener noreferrer">Open in Google Maps ↗</a>' +
+      '</div>';
+    m.bindPopup(popupHtml);
+    m.on("mouseover", () => {
+      const loc = document.querySelector('.loc[data-day-id="' + day.id + '"][data-loc-idx="' + i + '"]');
+      if (loc) loc.classList.add("is-marker-hover");
+    });
+    m.on("mouseout", () => {
+      const loc = document.querySelector('.loc[data-day-id="' + day.id + '"][data-loc-idx="' + i + '"]');
+      if (loc) loc.classList.remove("is-marker-hover");
+    });
+    m.on("click", () => {
+      const loc = document.querySelector('.loc[data-day-id="' + day.id + '"][data-loc-idx="' + i + '"]');
+      if (!loc) return;
+      document.querySelectorAll(".loc.is-marker-clicked").forEach(n => n.classList.remove("is-marker-clicked"));
+      // Force restart of the animation
+      void loc.offsetWidth;
+      loc.classList.add("is-marker-clicked");
+      setTimeout(() => loc.classList.remove("is-marker-clicked"), 2200);
+    });
+    markers.push(m);
+  });
+
+  mapInstances.push({ map, tile, day, markers });
+}
+
+/* Hover-highlight: bump the matching marker when its location card is hovered */
+function highlightMarker(dayId, idx, on) {
+  const inst = mapInstances.find(m => m.day.id === dayId);
+  if (!inst) return;
+  const marker = inst.markers[idx];
+  if (!marker) return;
+  if (on) {
+    marker.setStyle({ radius: 12, weight: 3, fillOpacity: 1 });
+    if (marker.bringToFront) marker.bringToFront();
+  } else {
+    marker.setStyle({ radius: 7, weight: 2, fillOpacity: 1 });
+  }
+}
+
+document.addEventListener("mouseover", (e) => {
+  const loc = e.target.closest(".loc");
+  if (!loc || !loc.dataset.dayId) return;
+  if (loc._hovered) return;
+  loc._hovered = true;
+  highlightMarker(loc.dataset.dayId, parseInt(loc.dataset.locIdx, 10), true);
+});
+document.addEventListener("mouseout", (e) => {
+  const loc = e.target.closest(".loc");
+  if (!loc || !loc.dataset.dayId) return;
+  // Only fire when leaving the .loc entirely, not when moving within it
+  if (loc.contains(e.relatedTarget)) return;
+  loc._hovered = false;
+  highlightMarker(loc.dataset.dayId, parseInt(loc.dataset.locIdx, 10), false);
+});
+
+(function initMapsLazily() {
+  if (!window.L) {
+    // Leaflet not yet loaded — wait
+    window.addEventListener("load", initMapsLazily, { once: true });
+    return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id.replace("map-", "");
+        const day = DAYS.find(d => d.id === id);
+        if (day && !mapInstances.find(m => m.day.id === id)) initMap(day);
+        io.unobserve(e.target);
+      }
+    });
+  }, { rootMargin: "200px 0px" });
+  document.querySelectorAll(".day-map").forEach(n => io.observe(n));
+})();
+
+function updateMapTiles(isDark) {
+  mapInstances.forEach(inst => {
+    inst.map.removeLayer(inst.tile);
+    inst.tile = L.tileLayer(isDark ? DARK_TILE_URL : LIGHT_TILE_URL, {
+      attribution: TILE_ATTR,
+      subdomains: "abcd",
+      maxZoom: 19
+    }).addTo(inst.map);
+    // Recolour markers
+    const fc = inst.day.segment === "roy" ? (isDark ? "#e0724a" : "#c5522a") : (isDark ? "#5b8ab5" : "#3a5f8a");
+    inst.markers.forEach(m => m.setStyle({ fillColor: fc }));
+  });
+}
+
+/* =========================================================
+ * THEME
+ * ========================================================= */
+(function initTheme() {
+  const stored = localStorage.getItem("theme");
+  let dark;
+  if (stored === "dark" || stored === "light") {
+    dark = stored === "dark";
+  } else {
+    dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  document.documentElement.classList.toggle("dark", dark);
+
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    const nowDark = !document.documentElement.classList.contains("dark");
+    document.documentElement.classList.toggle("dark", nowDark);
+    localStorage.setItem("theme", nowDark ? "dark" : "light");
+    updateMapTiles(nowDark);
+  });
+
+  // Follow system changes when user hasn't set a preference
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    mq.addEventListener && mq.addEventListener("change", (e) => {
+      if (localStorage.getItem("theme")) return;
+      document.documentElement.classList.toggle("dark", e.matches);
+      updateMapTiles(e.matches);
+    });
+  }
+})();
+
+/* =========================================================
+ * ACCORDION (Tips)
+ * ========================================================= */
+function setOpen(section, open, bodyEl) {
+  section.dataset.open = open ? "true" : "false";
+  const head = section.querySelector('[aria-expanded]');
+  if (head) head.setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) {
+    bodyEl.style.maxHeight = bodyEl.scrollHeight + "px";
+    // After transition, let it grow naturally
+    const onEnd = () => {
+      if (section.dataset.open === "true") bodyEl.style.maxHeight = "none";
+      bodyEl.removeEventListener("transitionend", onEnd);
+    };
+    bodyEl.addEventListener("transitionend", onEnd);
+  } else {
+    // Reset to a numeric value before collapsing
+    bodyEl.style.maxHeight = bodyEl.scrollHeight + "px";
+    requestAnimationFrame(() => {
+      bodyEl.style.maxHeight = "0px";
+    });
+  }
+}
+
+(function initTips() {
+  const tips = document.getElementById("tips");
+  const tipsBody = document.getElementById("tipsBody");
+  const tipsRoot = document.getElementById("tipsRoot");
+
+  // Initially open
+  tipsBody.style.maxHeight = "none";
+  tipsRoot.addEventListener("click", () => {
+    const open = tips.dataset.open === "true";
+    setOpen(tips, !open, tipsBody);
+    // When closing top-level, also reflow inner heights
+  });
+
+  document.querySelectorAll(".tip-section").forEach(section => {
+    const head = section.querySelector(".tip-head");
+    const body = section.querySelector(".tip-section-body");
+    body.style.maxHeight = "0px";
+    head.addEventListener("click", () => {
+      const open = section.dataset.open === "true";
+      setOpen(section, !open, body);
+      // If parent tips body height is fixed (rare), refresh
+      const tipsBody = document.getElementById("tipsBody");
+      if (tipsBody.style.maxHeight && tipsBody.style.maxHeight !== "none") {
+        tipsBody.style.maxHeight = tipsBody.scrollHeight + "px";
+      }
+    });
+  });
+})();
+
+/* =========================================================
+ * PDF
+ * ========================================================= */
+document.getElementById("pdfBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("pdfBtn");
+  const originalText = btn.textContent;
+  btn.textContent = "Preparing…";
+  btn.disabled = true;
+  // Initialize any maps that haven't loaded yet
+  if (window.L) {
+    DAYS.forEach(day => {
+      if (!mapInstances.find(m => m.day.id === day.id)) {
+        try { initMap(day); } catch (e) { /* swallow */ }
+      }
+    });
+    // Give tiles a moment to load and force map sizes to settle
+    await new Promise(r => setTimeout(r, 1200));
+    mapInstances.forEach(({ map }) => { try { map.invalidateSize(); } catch (e) {} });
+    await new Promise(r => setTimeout(r, 400));
+  }
+  btn.textContent = originalText;
+  btn.disabled = false;
+  window.print();
+});
+
+/* =========================================================
+ * EXTERNAL LINK HANDLING
+ * Some preview/iframe environments enforce Cross-Origin-Opener-Policy
+ * strictly enough that Firefox blocks <a target="_blank"> navigation
+ * to cross-origin sites (Google Maps, etc.) with a COOP mismatch warning.
+ * Intercepting the click and using window.open with the "noopener" feature
+ * puts the new tab in its own browsing-context group, sidestepping the check.
+ * ========================================================= */
+document.addEventListener("click", (e) => {
+  const a = e.target.closest && e.target.closest('a[target="_blank"]');
+  if (!a) return;
+  const href = a.getAttribute("href");
+  if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
+  // Let modifier-clicks (cmd/ctrl/shift/middle) behave natively
+  if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
+  e.preventDefault();
+  try {
+    const w = window.open(href, "_blank", "noopener,noreferrer");
+    if (!w) {
+      // Fallback if popup blocked
+      window.location.href = href;
+    }
+  } catch (err) {
+    window.location.href = href;
+  }
+}, true);
+</script>
+</body>
+</html>
