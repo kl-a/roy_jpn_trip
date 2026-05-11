@@ -1,6 +1,6 @@
 # Japan — November · Roy & Family
 
-An interactive travel guide for a two-week Japan trip: Roy's solo week in Tokyo, followed by a family week in Osaka. Built as a single self-contained HTML file — no build step, no framework, no dependencies to install.
+An interactive travel guide for a two-week Japan trip: Roy's solo week in Tokyo, followed by a family week in Osaka. Built as a single self-contained HTML file — no build step, no framework, no dependencies to install. Just made for the funsies and for the sake of a friend in need. 
 
 ## Features
 
@@ -27,6 +27,10 @@ Roy + Family — Osaka (Days 1–7)
   Day 5  Osaka Castle
   Day 6–7  Kyoto (overnight)
   Optional  Hiroshima
+
+Bonus — Onsen Towns Near Osaka
+  Arima Onsen  ★ Recommended for this trip (40 min direct, gold spring water)
+  Kinosaki Onsen  For next time · Roy solo or Roy + wife (2h45, 7 bathhouses)
 ```
 
 ## Usage

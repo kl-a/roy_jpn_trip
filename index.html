@@ -145,7 +145,7 @@
     transition: height 280ms cubic-bezier(.4,0,.2,1);
   }
   .timeline-wrap[data-expanded="true"] {
-    height: calc(var(--timeline-height) + 84px);
+    height: calc(var(--timeline-height) + 168px);
   }
   .timeline-bar {
     max-width: 1100px;
@@ -173,6 +173,7 @@
   }
   .timeline-week[data-seg="roy"] .week-num { color: var(--accent-roy); }
   .timeline-week[data-seg="family"] .week-num { color: var(--accent-family); }
+  .timeline-week[data-seg="bonus"] .week-num { color: var(--accent-bonus); }
   .timeline-week .week-name {
     font-family: var(--sans);
     font-size: 0.8125rem;
@@ -325,8 +326,10 @@
   }
   .timeline-stop[data-seg="roy"]:hover { color: var(--accent-roy); }
   .timeline-stop[data-seg="family"]:hover { color: var(--accent-family); }
+  .timeline-stop[data-seg="bonus"]:hover { color: var(--accent-bonus); }
   .timeline-stop[data-seg="roy"]:hover .dot { border-color: var(--accent-roy); }
   .timeline-stop[data-seg="family"]:hover .dot { border-color: var(--accent-family); }
+  .timeline-stop[data-seg="bonus"]:hover .dot { border-color: var(--accent-bonus); }
   .timeline-stop[data-seg="roy"].active .dot {
     background: var(--accent-roy);
     border-color: var(--accent-roy);
@@ -337,8 +340,14 @@
     border-color: var(--accent-family);
     transform: scale(1.25);
   }
+  .timeline-stop[data-seg="bonus"].active .dot {
+    background: var(--accent-bonus);
+    border-color: var(--accent-bonus);
+    transform: scale(1.25);
+  }
   .timeline-stop[data-seg="roy"].active { color: var(--accent-roy); }
   .timeline-stop[data-seg="family"].active { color: var(--accent-family); }
+  .timeline-stop[data-seg="bonus"].active { color: var(--accent-bonus); }
 
   .timeline-connector {
     height: 2px;
@@ -352,6 +361,7 @@
   }
   .timeline-connector.seg-roy { background: var(--accent-roy); opacity: 0.45; }
   .timeline-connector.seg-family { background: var(--accent-family); opacity: 0.45; }
+  .timeline-connector.seg-bonus { background: var(--accent-bonus); opacity: 0.45; }
   .timeline-connector.seg-transition {
     background: repeating-linear-gradient(
       90deg,
@@ -1374,13 +1384,17 @@ const TIMELINE_FLAGS = [
   { kind: "stops", segment: "roy", ids: ["roy-1","roy-2","roy-3","roy-45"] },
   { kind: "flag", glyph: "✈", text: "Osaka" },
   { kind: "stops", segment: "family", ids: ["fam-1","fam-2","fam-3","fam-4","fam-5","fam-67","fam-hiro"] },
-  { kind: "flag", glyph: "✈", text: "Home" }
+  { kind: "flag", glyph: "✈", text: "Home" },
+  { kind: "flag", glyph: "♨", text: "Onsen Towns" },
+  { kind: "stops", segment: "bonus", ids: ["bonus-arima","bonus-kinosaki"] }
 ];
 
 const BONUS_PLACES = [
   {
     id: "bonus-arima",
     segment: "bonus",
+    timelineLabel: "Arima",
+    timelineSub: "Gold Spring",
     badge: { kind: "rec", text: "★ Recommended for this trip" },
     eyebrow: "Onsen Town",
     title: "Arima Onsen",
@@ -1412,6 +1426,8 @@ const BONUS_PLACES = [
   {
     id: "bonus-kinosaki",
     segment: "bonus",
+    timelineLabel: "Kinosaki",
+    timelineSub: "7 Bathhouses",
     badge: { kind: "next", text: "For next time · Roy solo or Roy + wife" },
     eyebrow: "Onsen Town",
     title: "Kinosaki Onsen",
@@ -1666,9 +1682,10 @@ function renderBonusPlace(place) {
     track.innerHTML = "";
     track.style.flexDirection = expanded ? "column" : "row";
     track.style.alignItems = expanded ? "flex-start" : "center";
+    function findItem(id) { return DAYS.find(d => d.id === id) || BONUS_PLACES.find(d => d.id === id); }
     if (expanded) {
-      // Two rows: Week 1 (Roy) on top, Week 2 (Family) on bottom
-      ["roy", "family"].forEach(seg => {
+      // Three rows: Roy (Week 1), Family (Week 2), Onsen Towns (Bonus)
+      ["roy", "family", "bonus"].forEach(seg => {
         const row = el("div", { class: "timeline-row", attrs: { "data-week": seg } });
         const stopsGroup = TIMELINE_FLAGS.find(t => t.kind === "stops" && t.segment === seg);
         const idx = TIMELINE_FLAGS.indexOf(stopsGroup);
@@ -1680,7 +1697,7 @@ function renderBonusPlace(place) {
         }
         stopsGroup.ids.forEach((id, i) => {
           if (i > 0) row.appendChild(makeConnector("seg-" + seg));
-          row.appendChild(makeStop(DAYS.find(d => d.id === id)));
+          row.appendChild(makeStop(findItem(id)));
         });
         if (afterFlag && afterFlag.kind === "flag") {
           row.appendChild(makeConnector("seg-" + seg));
@@ -1689,7 +1706,7 @@ function renderBonusPlace(place) {
         track.appendChild(row);
       });
     } else {
-      // Single week view
+      // Single segment view
       const stopsGroup = TIMELINE_FLAGS.find(t => t.kind === "stops" && t.segment === activeWeek);
       const idx = TIMELINE_FLAGS.indexOf(stopsGroup);
       const beforeFlag = idx > 0 ? TIMELINE_FLAGS[idx - 1] : null;
@@ -1700,7 +1717,7 @@ function renderBonusPlace(place) {
       }
       stopsGroup.ids.forEach((id, i) => {
         if (i > 0) track.appendChild(makeConnector("seg-" + activeWeek));
-        track.appendChild(makeStop(DAYS.find(d => d.id === id)));
+        track.appendChild(makeStop(findItem(id)));
       });
       if (afterFlag && afterFlag.kind === "flag") {
         track.appendChild(makeConnector("seg-" + activeWeek));
@@ -1721,9 +1738,12 @@ function renderBonusPlace(place) {
     if (seg === "roy") {
       weekNum.textContent = "Week 1";
       weekName.textContent = "Tokyo · Roy solo";
-    } else {
+    } else if (seg === "family") {
       weekNum.textContent = "Week 2";
       weekName.textContent = "Osaka · Family";
+    } else {
+      weekNum.textContent = "Bonus";
+      weekName.textContent = "Onsen Towns";
     }
   }
 
@@ -1742,7 +1762,7 @@ function renderBonusPlace(place) {
     if (id === activeId) return;
     activeId = id;
     if (!id) return;
-    const day = DAYS.find(d => d.id === id);
+    const day = DAYS.find(d => d.id === id) || BONUS_PLACES.find(d => d.id === id);
     if (!day) return;
     // If collapsed and the day is in the other week, switch the week
     if (!expanded && day.segment !== activeWeek) {
@@ -1763,7 +1783,7 @@ function renderBonusPlace(place) {
   // Reposition plane on resize
   window.addEventListener("resize", () => requestAnimationFrame(positionPlane));
 
-  const sections = DAYS.map(d => document.getElementById("day-" + d.id)).filter(Boolean);
+  const sections = [...DAYS, ...BONUS_PLACES].map(d => document.getElementById("day-" + d.id)).filter(Boolean);
   const visibility = new Map();
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => { visibility.set(e.target.id, e.intersectionRatio); });
