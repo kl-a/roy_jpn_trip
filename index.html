@@ -635,8 +635,10 @@
     gap: 0;
   }
   .loc {
-    padding: 0.85rem 0;
+    padding: 0.85rem 0 0.85rem 0.75rem;
     border-top: 1px dashed var(--line);
+    transition: background-color 160ms ease, box-shadow 160ms ease;
+    border-radius: 4px;
   }
   .loc:first-child { border-top: none; }
   .loc-head {
@@ -696,10 +698,6 @@
   /* Optional Hiroshima callout */
   .day.optional .day-eyebrow { color: var(--ink-muted); }
 
-  .loc {
-    transition: background-color 160ms ease, box-shadow 160ms ease;
-    border-radius: 4px;
-  }
   .loc.is-marker-hover {
     background: color-mix(in srgb, var(--accent-roy) 10%, var(--bg));
     box-shadow: inset 3px 0 0 var(--accent-roy);
