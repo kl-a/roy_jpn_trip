@@ -550,16 +550,26 @@
     max-width: 38em;
   }
 
-  /* Map */
-  .day-card { isolation: isolate; }
+  /* Map + locations side by side */
+  .day-card {
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 2rem;
+    align-items: start;
+  }
+  .day-map-col {
+    position: sticky;
+    top: calc(var(--header-height) + var(--timeline-height) + 16px);
+  }
   .day-map {
     width: 100%;
-    height: 300px;
+    height: 380px;
     position: relative;
     z-index: 0;
     border: 1px solid var(--line);
     background: var(--bg-surface);
-    margin: 0.5rem 0 1.5rem;
+    margin: 0 0 0.5rem;
   }
   .day-map.is-loading::before {
     content: "Loading map…";
@@ -620,19 +630,15 @@
 
   /* Locations */
   .locations {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 0.25rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
   .loc {
     padding: 0.85rem 0;
     border-top: 1px dashed var(--line);
   }
-  .loc:first-child, .loc:nth-child(2) { border-top: none; }
-  @media (max-width: 700px) {
-    .locations { grid-template-columns: 1fr; }
-    .loc:nth-child(2) { border-top: 1px dashed var(--line); }
-  }
+  .loc:first-child { border-top: none; }
   .loc-head {
     display: flex;
     align-items: baseline;
@@ -762,6 +768,8 @@
     .section-header.first { margin-top: 0; }
     #section-family { page-break-before: always; }
     .day { page-break-inside: avoid; border-top-color: #ccc; margin: 1.5rem 0; padding-top: 1rem; }
+    .day-card { display: block; }
+    .day-map-col { position: static; }
     .map-print-fallback { display: none !important; }
     .day-map {
       display: block !important;
@@ -792,7 +800,9 @@
     .day-title { font-size: 1.5rem; }
     .day-head { gap: 0.75rem; }
     .pdf-btn { padding: 0.5rem 0.7rem; font-size: 0.75rem; }
-    .day-map { height: 240px; }
+    .day-card { grid-template-columns: 1fr; }
+    .day-map-col { position: static; }
+    .day-map { height: 240px; margin-bottom: 1rem; }
     .timeline-week .week-name { display: none; }
   }
 </style>
@@ -1381,15 +1391,21 @@ function renderDay(day, idxWithinSeg) {
     locsGrid.appendChild(locWrap);
   });
 
+  const mapCol = el("div", { class: "day-map-col" });
+  mapCol.appendChild(mapDiv);
+  mapCol.appendChild(printFallback);
+
+  const card = el("div", { class: "day-card" });
+  card.appendChild(mapCol);
+  card.appendChild(locsGrid);
+
   const dayEl = el("article", {
     class: "day" + (day.optional ? " optional" : ""),
     id: "day-" + day.id,
     attrs: { "data-screen-label": (day.segment === "roy" ? "Roy " : "Family ") + day.eyebrow + " — " + day.title }
   });
   dayEl.appendChild(head);
-  dayEl.appendChild(mapDiv);
-  dayEl.appendChild(printFallback);
-  dayEl.appendChild(locsGrid);
+  dayEl.appendChild(card);
 
   return dayEl;
 }
@@ -1600,7 +1616,7 @@ function initMap(day) {
 
   const markers = [];
   day.locations.forEach((loc, i) => {
-    if (!loc.coords) return;
+    if (!loc.coords) { markers[i] = null; return; }
     const m = L.circleMarker(loc.coords, {
       radius: 7,
       fillColor: isDark ? fillColorDark : fillColor,
@@ -1633,7 +1649,7 @@ function initMap(day) {
       loc.classList.add("is-marker-clicked");
       setTimeout(() => loc.classList.remove("is-marker-clicked"), 2200);
     });
-    markers.push(m);
+    markers[i] = m;
   });
 
   mapInstances.push({ map, tile, day, markers });
