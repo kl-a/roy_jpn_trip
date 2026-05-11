@@ -701,34 +701,34 @@
     border-radius: 4px;
   }
   .loc.is-marker-hover {
-    background: color-mix(in srgb, var(--accent-roy) 9%, transparent);
+    background: color-mix(in srgb, var(--accent-roy) 10%, var(--bg));
     box-shadow: inset 3px 0 0 var(--accent-roy);
   }
   .day.family .loc.is-marker-hover {
-    background: color-mix(in srgb, var(--accent-family) 10%, transparent);
+    background: color-mix(in srgb, var(--accent-family) 10%, var(--bg));
     box-shadow: inset 3px 0 0 var(--accent-family);
+  }
+  html.dark .loc.is-marker-hover {
+    background: color-mix(in srgb, var(--accent-roy) 22%, var(--bg-surface));
+  }
+  html.dark .day.family .loc.is-marker-hover {
+    background: color-mix(in srgb, var(--accent-family) 22%, var(--bg-surface));
   }
   .loc.is-marker-clicked {
     animation: locPulse 2.2s ease-out;
   }
   @keyframes locPulse {
-    0%   { background: color-mix(in srgb, var(--accent-roy) 22%, transparent); box-shadow: inset 3px 0 0 var(--accent-roy); }
-    60%  { background: color-mix(in srgb, var(--accent-roy) 10%, transparent); box-shadow: inset 3px 0 0 var(--accent-roy); }
-    100% { background: transparent; box-shadow: inset 3px 0 0 transparent; }
+    0%   { background: color-mix(in srgb, var(--accent-roy) 22%, var(--bg)); box-shadow: inset 3px 0 0 var(--accent-roy); }
+    60%  { background: color-mix(in srgb, var(--accent-roy) 10%, var(--bg)); box-shadow: inset 3px 0 0 var(--accent-roy); }
+    100% { background: var(--bg); box-shadow: inset 3px 0 0 transparent; }
   }
   .day.family .loc.is-marker-clicked {
     animation: locPulseFam 2.2s ease-out;
   }
   @keyframes locPulseFam {
-    0%   { background: color-mix(in srgb, var(--accent-family) 22%, transparent); box-shadow: inset 3px 0 0 var(--accent-family); }
-    60%  { background: color-mix(in srgb, var(--accent-family) 10%, transparent); box-shadow: inset 3px 0 0 var(--accent-family); }
-    100% { background: transparent; box-shadow: inset 3px 0 0 transparent; }
-  }
-  .loc:hover {
-    background: color-mix(in srgb, var(--accent-roy) 4%, transparent);
-  }
-  .day.family .loc:hover {
-    background: color-mix(in srgb, var(--accent-family) 5%, transparent);
+    0%   { background: color-mix(in srgb, var(--accent-family) 22%, var(--bg)); box-shadow: inset 3px 0 0 var(--accent-family); }
+    60%  { background: color-mix(in srgb, var(--accent-family) 10%, var(--bg)); box-shadow: inset 3px 0 0 var(--accent-family); }
+    100% { background: var(--bg); box-shadow: inset 3px 0 0 transparent; }
   }
   .map-print-fallback {
     display: none;
@@ -1674,6 +1674,7 @@ document.addEventListener("mouseover", (e) => {
   if (!loc || !loc.dataset.dayId) return;
   if (loc._hovered) return;
   loc._hovered = true;
+  loc.classList.add("is-marker-hover");
   highlightMarker(loc.dataset.dayId, parseInt(loc.dataset.locIdx, 10), true);
 });
 document.addEventListener("mouseout", (e) => {
@@ -1682,6 +1683,7 @@ document.addEventListener("mouseout", (e) => {
   // Only fire when leaving the .loc entirely, not when moving within it
   if (loc.contains(e.relatedTarget)) return;
   loc._hovered = false;
+  loc.classList.remove("is-marker-hover");
   highlightMarker(loc.dataset.dayId, parseInt(loc.dataset.locIdx, 10), false);
 });
 
