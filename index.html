@@ -22,6 +22,7 @@
     --accent-roy: #c5522a;
     --accent-family: #3a5f8a;
     --accent-soft: #f5ede7;
+    --accent-bonus: #3d6b45;
     --serif: "Playfair Display", Georgia, serif;
     --sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     --shadow: 0 1px 0 var(--line);
@@ -41,6 +42,7 @@
     --accent-roy: #e0724a;
     --accent-family: #5b8ab5;
     --accent-soft: #2a1f1a;
+    --accent-bonus: #5aad6a;
   }
 
   * { box-sizing: border-box; }
@@ -488,6 +490,7 @@
   }
   .section-title .accent-roy { color: var(--accent-roy); }
   .section-title .accent-family { color: var(--accent-family); }
+  .section-title .accent-bonus { color: var(--accent-bonus); }
   .section-intro {
     margin: 0.85rem 0 0;
     color: var(--ink-soft);
@@ -728,6 +731,56 @@
     60%  { background: color-mix(in srgb, var(--accent-family) 10%, var(--bg)); box-shadow: inset 3px 0 0 var(--accent-family); }
     100% { background: var(--bg); box-shadow: inset 3px 0 0 transparent; }
   }
+
+  /* ============ BONUS SECTION ============ */
+  .bonus .day-eyebrow { color: var(--accent-bonus); }
+  .bonus .loc-num { color: var(--accent-bonus); }
+  .bonus a { color: var(--accent-bonus); }
+  .bonus .loc.is-marker-hover {
+    background: color-mix(in srgb, var(--accent-bonus) 10%, var(--bg));
+    box-shadow: inset 3px 0 0 var(--accent-bonus);
+  }
+  html.dark .bonus .loc.is-marker-hover {
+    background: color-mix(in srgb, var(--accent-bonus) 22%, var(--bg-surface));
+  }
+  .bonus .loc.is-marker-clicked { animation: locPulseBonus 2.2s ease-out; }
+  @keyframes locPulseBonus {
+    0%   { background: color-mix(in srgb, var(--accent-bonus) 22%, var(--bg)); box-shadow: inset 3px 0 0 var(--accent-bonus); }
+    60%  { background: color-mix(in srgb, var(--accent-bonus) 10%, var(--bg)); box-shadow: inset 3px 0 0 var(--accent-bonus); }
+    100% { background: var(--bg); box-shadow: inset 3px 0 0 transparent; }
+  }
+  .bonus-badge {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.65rem;
+    margin-bottom: 0.9rem;
+  }
+  .bonus-badge.rec {
+    color: var(--accent-bonus);
+    background: color-mix(in srgb, var(--accent-bonus) 10%, var(--bg));
+    border: 1px solid color-mix(in srgb, var(--accent-bonus) 35%, transparent);
+  }
+  html.dark .bonus-badge.rec {
+    background: color-mix(in srgb, var(--accent-bonus) 18%, var(--bg-surface));
+  }
+  .bonus-badge.next {
+    color: var(--ink-muted);
+    background: var(--bg-surface);
+    border: 1px solid var(--line);
+  }
+  .bonus-meta {
+    font-size: 0.8125rem;
+    color: var(--ink-soft);
+    margin: 0 0 1.5rem;
+    line-height: 1.6;
+  }
+  .bonus-meta strong { color: var(--ink); font-weight: 600; }
+
   .map-print-fallback {
     display: none;
     margin: 0.5rem 0 1.5rem;
@@ -942,6 +995,14 @@
     <p class="basing"><strong>Stay in Namba</strong> — heart of Osaka, main transit hub, gets you anywhere fast.</p>
   </header>
   <div id="family-days" class="family"><!-- day blocks injected --></div>
+
+  <!-- ============ BONUS ============ -->
+  <header class="section-header" id="section-bonus">
+    <p class="section-eyebrow">Bonus</p>
+    <h2 class="section-title"><span class="accent-bonus">Onsen Towns</span> — Near Osaka</h2>
+    <p class="section-intro">Two hot spring destinations within reach of Osaka — worth knowing about if there's appetite for a ryokan night or two.</p>
+  </header>
+  <div id="bonus-places" class="bonus"><!-- injected --></div>
 
   <footer class="site-foot">
     Japan · November · For Roy and family
@@ -1316,6 +1377,74 @@ const TIMELINE_FLAGS = [
   { kind: "flag", glyph: "✈", text: "Home" }
 ];
 
+const BONUS_PLACES = [
+  {
+    id: "bonus-arima",
+    segment: "bonus",
+    badge: { kind: "rec", text: "★ Recommended for this trip" },
+    eyebrow: "Onsen Town",
+    title: "Arima Onsen",
+    summary: "One of Japan's oldest hot spring towns — 40 minutes direct from Osaka by train. The kinsen (gold spring) water is iron-rich and rust-coloured, completely unlike most onsen you'll encounter. Compact, walkable, and well set up for older travellers. The right choice for the family week.",
+    travel: "~40 min from Osaka — Hankyu or subway to Tanigami, then Kobe Electric Railway direct",
+    stay: "1–2 nights",
+    center: [34.7993, 135.2455],
+    zoom: 16,
+    locations: [
+      { name: "Kin no Yu (Gold Spring)", coords: [34.7996, 135.2449], bullets: [
+        "The famous kinsen — rust-coloured iron and salt mineral water, stains everything orange",
+        "One of two public bathhouses in town, prioritise this one",
+        "Go early or off-peak, it gets busy"
+      ]},
+      { name: "Gin no Yu (Silver Spring)", coords: [34.7990, 135.2442], bullets: [
+        "The second public bath — clear carbonated water, completely different feel from the gold spring",
+        "Doing both in one visit is very doable and worth it for the contrast"
+      ]},
+      { name: "Arima Onsen Station", coords: [34.7975, 135.2468], bullets: [
+        "Kobe Electric Railway — change from Hankyu at Tanigami, straightforward journey",
+        "Ryokans will often arrange luggage pickup or storage on arrival"
+      ]},
+      { name: "Town centre", coords: [34.7988, 135.2452], bullets: [
+        "Boutique shops, street snacks, sake tasting — everything walkable in 10–15 minutes",
+        "Book a ryokan for the full experience — many offer private onsen rooms at the mid-high end"
+      ]}
+    ]
+  },
+  {
+    id: "bonus-kinosaki",
+    segment: "bonus",
+    badge: { kind: "next", text: "For next time · Roy solo or Roy + wife" },
+    eyebrow: "Onsen Town",
+    title: "Kinosaki Onsen",
+    summary: "More romantic and more visually iconic than Arima — willow-lined canal, seven public bathhouses to hop between in your yukata, genuinely slow pace. About 2h45 from Osaka which makes it a proper destination rather than a side trip. Too much of a stretch logistically for the family week, but absolutely flag it for a return visit.",
+    travel: "~2h45 from Osaka — Limited Express Kounotori, direct, no transfer",
+    stay: "1–2 nights",
+    center: [35.6244, 134.8093],
+    zoom: 16,
+    locations: [
+      { name: "Willow Canal (Otani River)", coords: [35.6244, 134.8093], bullets: [
+        "The defining image of Kinosaki — willow trees, stone lanterns, yukata-clad visitors at dusk",
+        "Walk the full length after checking in, it is short but very beautiful"
+      ]},
+      { name: "Sato no Yu", coords: [35.6268, 134.8099], bullets: [
+        "Largest of the seven public bathhouses — indoor and outdoor baths",
+        "Good first stop to get oriented before hopping around"
+      ]},
+      { name: "Ichi-no-yu", coords: [35.6241, 134.8085], bullets: [
+        "Cave bath — the most distinctive of the seven, carved into the hillside rock",
+        "Prioritise this one alongside Sato no Yu"
+      ]},
+      { name: "Mandara-yu", coords: [35.6233, 134.8091], bullets: [
+        "Older, quieter atmosphere — a good contrast to the busier spots",
+        "Buy the all-day pass on arrival and work through all seven throughout the day"
+      ]},
+      { name: "Kinosaki-Onsen Station", coords: [35.6208, 134.8076], bullets: [
+        "Limited Express Kounotori from Osaka or Kyoto — direct, no transfer",
+        "Leave bags at the ryokan, collect your yukata and towel set, walk straight out"
+      ]}
+    ]
+  }
+];
+
 /* =========================================================
  * UTILITIES
  * ========================================================= */
@@ -1416,6 +1545,69 @@ function renderDay(day, idxWithinSeg) {
     if (d.segment === "roy") royRoot.appendChild(renderDay(d, r++));
     else famRoot.appendChild(renderDay(d, f++));
   });
+})();
+
+function renderBonusPlace(place) {
+  const head = el("div", { class: "day-head" }, [
+    el("div", { class: "day-head-left" }, [
+      el("p", { class: "day-eyebrow", text: place.eyebrow }),
+      el("h3", { class: "day-title", text: place.title })
+    ]),
+    el("p", { class: "day-summary", text: place.summary })
+  ]);
+
+  const badge = el("span", { class: "bonus-badge " + place.badge.kind, text: place.badge.text });
+  const meta = el("p", { class: "bonus-meta" });
+  meta.innerHTML = "<strong>Getting there:</strong> " + place.travel + " &ensp;&middot;&ensp; <strong>Stay:</strong> " + place.stay;
+
+  const mapDiv = el("div", {
+    class: "day-map is-loading",
+    id: "map-" + place.id,
+    attrs: { "aria-label": "Map of " + place.title }
+  });
+
+  const printFallback = el("div", { class: "map-print-fallback" });
+  printFallback.innerHTML = "<strong>Map locations:</strong> " + place.locations.filter(l => l.coords).map(l => l.name).join(", ");
+
+  const locsGrid = el("div", { class: "locations" });
+  place.locations.forEach((loc, i) => {
+    const locWrap = el("div", { class: "loc", attrs: { "data-day-id": place.id, "data-loc-idx": i } });
+    const locHead = el("div", { class: "loc-head" });
+    locHead.appendChild(el("span", { class: "loc-num", text: pad2(i + 1) }));
+    if (loc.coords) {
+      const a = el("a", { attrs: { href: mapsUrl(loc.name), target: "_blank", rel: "noopener noreferrer" }, text: loc.name });
+      const h4 = el("h4", { class: "loc-name" });
+      h4.appendChild(a);
+      locHead.appendChild(h4);
+    } else {
+      locHead.appendChild(el("h4", { class: "loc-name plain", text: loc.name }));
+    }
+    locWrap.appendChild(locHead);
+    const ul = el("ul");
+    loc.bullets.forEach(b => { const li = el("li"); li.innerHTML = b; ul.appendChild(li); });
+    locWrap.appendChild(ul);
+    locsGrid.appendChild(locWrap);
+  });
+
+  const mapCol = el("div", { class: "day-map-col" });
+  mapCol.appendChild(mapDiv);
+  mapCol.appendChild(printFallback);
+
+  const card = el("div", { class: "day-card" });
+  card.appendChild(mapCol);
+  card.appendChild(locsGrid);
+
+  const placeEl = el("article", { class: "day", id: "day-" + place.id });
+  placeEl.appendChild(head);
+  placeEl.appendChild(badge);
+  placeEl.appendChild(meta);
+  placeEl.appendChild(card);
+  return placeEl;
+}
+
+(function renderBonusPlaces() {
+  const root = document.getElementById("bonus-places");
+  BONUS_PLACES.forEach(p => root.appendChild(renderBonusPlace(p)));
 })();
 
 /* =========================================================
@@ -1609,8 +1801,8 @@ function initMap(day) {
     maxZoom: 19
   }).addTo(map);
 
-  const fillColor = day.segment === "roy" ? "#c5522a" : "#3a5f8a";
-  const fillColorDark = day.segment === "roy" ? "#e0724a" : "#5b8ab5";
+  const fillColor = day.segment === "roy" ? "#c5522a" : day.segment === "family" ? "#3a5f8a" : "#3d6b45";
+  const fillColorDark = day.segment === "roy" ? "#e0724a" : day.segment === "family" ? "#5b8ab5" : "#5aad6a";
 
   const markers = [];
   day.locations.forEach((loc, i) => {
@@ -1695,7 +1887,7 @@ document.addEventListener("mouseout", (e) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
         const id = e.target.id.replace("map-", "");
-        const day = DAYS.find(d => d.id === id);
+        const day = DAYS.find(d => d.id === id) || BONUS_PLACES.find(d => d.id === id);
         if (day && !mapInstances.find(m => m.day.id === id)) initMap(day);
         io.unobserve(e.target);
       }
@@ -1713,7 +1905,7 @@ function updateMapTiles(isDark) {
       maxZoom: 19
     }).addTo(inst.map);
     // Recolour markers
-    const fc = inst.day.segment === "roy" ? (isDark ? "#e0724a" : "#c5522a") : (isDark ? "#5b8ab5" : "#3a5f8a");
+    const fc = inst.day.segment === "roy" ? (isDark ? "#e0724a" : "#c5522a") : inst.day.segment === "family" ? (isDark ? "#5b8ab5" : "#3a5f8a") : (isDark ? "#5aad6a" : "#3d6b45");
     inst.markers.forEach(m => m.setStyle({ fillColor: fc }));
   });
 }
